@@ -750,7 +750,8 @@ fn ElkLayered::layout(
     }
 
     self.notify_processor_ready(lgraph, processor)
-    processor.process(lgraph, monitor.sub_task(monitor_progress))
+    let probe_sub = monitor.sub_task(monitor_progress)
+    probe_timed(probe_sub, () => processor.process(lgraph, probe_sub))
     self.notify_processor_finished(lgraph, processor)
     if @core.layout_runtime_has_error() {
       return
@@ -820,7 +821,8 @@ fn ElkLayered::hierarchical_layout(
 
         if !elk_layered_is_hierarchy_aware_processor(processor) {
           self.notify_processor_ready(graph, processor)
-          processor.process(graph, monitor.sub_task(1.0))
+          let probe_sub = monitor.sub_task(1.0)
+          probe_timed(probe_sub, () => processor.process(graph, probe_sub))
           self.notify_processor_finished(graph, processor)
           if @core.layout_runtime_has_error() {
             return
@@ -830,7 +832,8 @@ fn ElkLayered::hierarchical_layout(
 
         if elk_layered_is_root(graph) {
           self.notify_processor_ready(graph, processor)
-          processor.process(graph, monitor.sub_task(1.0))
+          let probe_sub = monitor.sub_task(1.0)
+          probe_timed(probe_sub, () => processor.process(graph, probe_sub))
           self.notify_processor_finished(graph, processor)
           if @core.layout_runtime_has_error() {
             return

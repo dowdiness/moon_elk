@@ -834,6 +834,16 @@ pub fn port_restorer_sorted_two_side_loop_port_sides(SelfHyperLoop) -> Array[@co
 
 pub fn port_side_processor_set_port_side(LPort) -> Unit
 
+pub fn probe_sort_split_add_node_sort(Double) -> Unit
+
+pub fn probe_sort_split_add_port_phase(Double) -> Unit
+
+pub fn probe_sort_split_dump() -> (Double, Double, Int, Int, Int)
+
+pub fn probe_sort_split_record_layer(Array[LNode]) -> Unit
+
+pub fn probe_sort_split_reset() -> Unit
+
 pub fn provide_collector_port(LGraph, LNode, @options.PortType, @core.PortSide) -> LPort
 
 pub fn rectangle_union(Rectangle, Rectangle) -> Rectangle
@@ -2680,6 +2690,14 @@ pub enum PortSideAssignerTarget {
 }
 
 type PortSideRange
+
+pub struct ProbeSortSplit {
+  mut port_phase : Double
+  mut node_sort : Double
+  mut layers : Int
+  mut layers_qualifying : Int
+  mut largest_layer : Int
+}
 
 pub struct Rectangle {
   mut top : Double

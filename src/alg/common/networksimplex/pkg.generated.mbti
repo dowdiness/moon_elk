@@ -19,6 +19,12 @@ pub fn new_ngraph() -> NGraph
 
 pub fn nnode_of() -> NNodeBuilder
 
+pub fn probe_ns_exchange_dump() -> (Double, Double, Double, Double, Double)
+
+pub fn probe_ns_split_dump() -> (Int, Int, Int, Int, Double, Double, Double, Double, Double, Double)
+
+pub fn probe_ns_split_reset() -> Unit
+
 pub fn reset_network_simplex_model_for_test() -> Unit
 
 // Errors
@@ -121,6 +127,24 @@ pub fn NetworkSimplex::execute(Self, monitor? : @core.IElkProgressMonitor) -> Un
 pub fn NetworkSimplex::with_balancing(Self, Bool) -> Self
 pub fn NetworkSimplex::with_iteration_limit(Self, Int) -> Self
 pub fn NetworkSimplex::with_previous_layering(Self, Array[Int]) -> Self
+
+pub struct ProbeNsSplit {
+  mut runs : Int
+  mut iterations : Int
+  mut nodes_seen : Int
+  mut edges_seen : Int
+  mut leave_edge : Double
+  mut enter_edge : Double
+  mut exchange : Double
+  mut initialize : Double
+  mut feasible_tree : Double
+  mut finalize : Double
+  mut ex_tree_edges : Double
+  mut ex_layer_update : Double
+  mut ex_reset_visited : Double
+  mut ex_postorder : Double
+  mut ex_cutvalues : Double
+}
 
 // Type aliases
 

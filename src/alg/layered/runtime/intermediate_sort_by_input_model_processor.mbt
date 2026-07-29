@@ -291,6 +291,8 @@ fn sort_by_input_model_processor_process(
     }
     let previous_layer = graph.get_layers()[previous_layer_index]
 
+    probe_sort_split_record_layer(layer.get_nodes())
+    let probe_port_start = @bench.monotonic_clock_start()
     for node in layer.get_nodes() {
       let constraints_value = if node.has_property_string(
           @core.port_constraints,
@@ -328,6 +330,10 @@ fn sort_by_input_model_processor_process(
       }
     }
 
+    probe_sort_split_add_port_phase(
+      @bench.monotonic_clock_end(probe_port_start),
+    )
+    let probe_sort_start = @bench.monotonic_clock_start()
     if !sort_by_input_model_processor_sort_by_model_order(
         layer.get_nodes(),
         ordering_strategy,
@@ -341,6 +347,7 @@ fn sort_by_input_model_processor_process(
         comparator,
       )
     }
+    probe_sort_split_add_node_sort(@bench.monotonic_clock_end(probe_sort_start))
 
     if monitor.is_logging_enabled() {
       monitor.log("Layer " + layer_index.to_string() + ": " + layer.to_string())

@@ -499,10 +499,13 @@ fn ns_exchange(
       "Given enter edge is a tree edge already.",
     )
   }
+  let probe_tree_start = @bench.monotonic_clock_start()
   leave.set_tree_edge(false)
   ns_remove_tree_edge(network_simplex, leave)
   enter.set_tree_edge(true)
   ns_add_tree_edge_unique(network_simplex, enter)
+  probe_ns_add_ex_tree_edges(@bench.monotonic_clock_end(probe_tree_start))
+  let probe_layer_start = @bench.monotonic_clock_start()
   let mut delta = enter.get_target().get_layer() -
     enter.get_source().get_layer() -
     enter.get_delta()
@@ -514,12 +517,19 @@ fn ns_exchange(
       node.set_layer(node.get_layer() + delta)
     }
   }
+  probe_ns_add_ex_layer_update(@bench.monotonic_clock_end(probe_layer_start))
   network_simplex.post_order = 1
+  let probe_reset_start = @bench.monotonic_clock_start()
   ns_reset_edge_visited(network_simplex)
+  probe_ns_add_ex_reset_visited(@bench.monotonic_clock_end(probe_reset_start))
+  let probe_postorder_start = @bench.monotonic_clock_start()
   ignore(
     ns_postorder_traversal(network_simplex, network_simplex.graph.nodes[0]),
   )
+  probe_ns_add_ex_postorder(@bench.monotonic_clock_end(probe_postorder_start))
+  let probe_cutvalues_start = @bench.monotonic_clock_start()
   ns_cutvalues(network_simplex)
+  probe_ns_add_ex_cutvalues(@bench.monotonic_clock_end(probe_cutvalues_start))
 }
 
 ///|
@@ -691,21 +701,40 @@ fn ns_execute_impl(
   if remove_subtrees {
     ns_remove_subtrees(network_simplex)
   }
+  probe_ns_record_run(
+    network_simplex.graph.nodes.length(),
+    network_simplex.edges.length(),
+  )
+  let probe_init_start = @bench.monotonic_clock_start()
   ns_initialize(network_simplex)
+  probe_ns_add_initialize(@bench.monotonic_clock_end(probe_init_start))
+  let probe_feasible_start = @bench.monotonic_clock_start()
   ns_feasible_tree(network_simplex)
+  probe_ns_add_feasible_tree(@bench.monotonic_clock_end(probe_feasible_start))
+  let probe_leave_start = @bench.monotonic_clock_start()
   let mut leave_edge = ns_leave_edge(network_simplex)
+  probe_ns_add_leave_edge(@bench.monotonic_clock_end(probe_leave_start))
   let mut iteration = 0
   while leave_edge is Some(leaving) &&
         iteration < network_simplex.iteration_limit {
-    match ns_enter_edge(network_simplex, leaving) {
+    let probe_enter_start = @bench.monotonic_clock_start()
+    let entering_edge = ns_enter_edge(network_simplex, leaving)
+    probe_ns_add_enter_edge(@bench.monotonic_clock_end(probe_enter_start))
+    match entering_edge {
       Some(entering) => {
+        let probe_exchange_start = @bench.monotonic_clock_start()
         ns_exchange(network_simplex, leaving, entering)
+        probe_ns_add_exchange(@bench.monotonic_clock_end(probe_exchange_start))
+        let probe_leave_next = @bench.monotonic_clock_start()
         leave_edge = ns_leave_edge(network_simplex)
+        probe_ns_add_leave_edge(@bench.monotonic_clock_end(probe_leave_next))
         iteration = iteration + 1
+        probe_ns_record_iteration()
       }
       None => break
     }
   }
+  let probe_finalize_start = @bench.monotonic_clock_start()
   if remove_subtrees {
     ns_reattach_subtrees(network_simplex)
   }
@@ -714,6 +743,7 @@ fn ns_execute_impl(
   } else {
     ignore(ns_normalize(network_simplex))
   }
+  probe_ns_add_finalize(@bench.monotonic_clock_end(probe_finalize_start))
 }
 
 ///|

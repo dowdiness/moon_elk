@@ -19,6 +19,12 @@ pub fn new_elk_layered() -> ElkLayered
 
 pub fn new_layered_layout_provider() -> LayeredLayoutProvider
 
+pub fn probe_timed(@core.IElkProgressMonitor?, () -> Unit) -> Unit
+
+pub fn probe_timing_dump() -> Array[(Int, String, Double)]
+
+pub fn probe_timing_reset() -> Unit
+
 // Errors
 pub suberror ElkLayeredTestExecutionException {
   ElkLayeredTestExecutionException(String)
