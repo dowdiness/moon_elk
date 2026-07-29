@@ -279,6 +279,24 @@ fn ModelOrderNodeComparator::update_bigger_and_smaller_associations(
 }
 
 ///|
+fn ModelOrderNodeComparator::record_decided_pair(
+  self : ModelOrderNodeComparator,
+  bigger : LNode,
+  smaller : LNode,
+) -> Unit {
+  let bigger_handle = lnode_internal_handle(bigger)
+  let smaller_handle = lnode_internal_handle(smaller)
+  model_order_node_add_unique(
+    model_order_node_associations_get(self.bigger_than, bigger_handle),
+    smaller_handle,
+  )
+  model_order_node_add_unique(
+    model_order_node_associations_get(self.smaller_than, smaller_handle),
+    bigger_handle,
+  )
+}
+
+///|
 fn ModelOrderNodeComparator::handle_helper_dummy_nodes(
   self : ModelOrderNodeComparator,
   n1 : LNode,
@@ -522,9 +540,9 @@ fn ModelOrderNodeComparator::update_elk_0_8_1_compare_result(
   n2_order : Int,
 ) -> Int {
   if n1_order > n2_order {
-    self.update_bigger_and_smaller_associations(n1, n2)
+    self.record_decided_pair(n1, n2)
   } else {
-    self.update_bigger_and_smaller_associations(n2, n1)
+    self.record_decided_pair(n2, n1)
   }
   model_order_node_compare_int(n1_order, n2_order)
 }
@@ -578,11 +596,11 @@ fn ModelOrderNodeComparator::compare_nodes_and_edges_elk_0_8_1(
               lnode_internal_handle(right_node) {
               for port in left_node.get_ports() {
                 if lport_internal_handle(port) == lport_internal_handle(source1) {
-                  self.update_bigger_and_smaller_associations(n2, n1)
+                  self.record_decided_pair(n2, n1)
                   return -1
                 } else if lport_internal_handle(port) ==
                   lport_internal_handle(source2) {
-                  self.update_bigger_and_smaller_associations(n1, n2)
+                  self.record_decided_pair(n1, n2)
                   return 1
                 }
               }
@@ -597,11 +615,11 @@ fn ModelOrderNodeComparator::compare_nodes_and_edges_elk_0_8_1(
             for previous_node in self.previous_layer {
               if lnode_internal_handle(previous_node) ==
                 lnode_internal_handle(left_node) {
-                self.update_bigger_and_smaller_associations(n2, n1)
+                self.record_decided_pair(n2, n1)
                 return -1
               } else if lnode_internal_handle(previous_node) ==
                 lnode_internal_handle(right_node) {
-                self.update_bigger_and_smaller_associations(n1, n2)
+                self.record_decided_pair(n1, n2)
                 return 1
               }
             }
