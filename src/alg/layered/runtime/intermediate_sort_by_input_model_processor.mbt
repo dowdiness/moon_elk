@@ -200,6 +200,50 @@ pub fn sort_by_input_model_processor_insertion_sort_port(
 }
 
 ///|
+/// Sort a layer directly on `model_order`, skipping the comparator, when
+/// that provably yields the same permutation. Returns false without
+/// touching `nodes` when it does not apply.
+///
+/// The conditions are `NODES_AND_EDGES`, and a `model_order` on every node
+/// that is distinct within the layer. Then every comparison the comparator
+/// could make is the integer compare: `NodesAndEdges` dispatches straight
+/// to `compare_nodes_and_edges_elk_0_8_1`, which consults neither the long
+/// edge nor the group order strategy, and its branch for a node without
+/// `model_order` is unreachable. The `bigger_than` / `smaller_than` caches
+/// start empty per layer and record only relations derived from those same
+/// compares, so a hit cannot contradict the integer order.
+///
+/// The comparator diverges from the integers in exactly one place: on a tie
+/// it returns 0 yet records a strict relation, which a later compare of
+/// that pair would report as non-zero. Distinctness rules that out, and
+/// makes the resulting order unique, so this does not rely on the sort
+/// being stable.
+fn sort_by_input_model_processor_sort_by_model_order(
+  nodes : Array[LNode],
+  ordering_strategy : OrderingStrategy,
+) -> Bool {
+  guard ordering_strategy is NodesAndEdges else { return false }
+  let seen : @hashset.HashSet[Int] = @hashset.HashSet([])
+  for node in nodes {
+    guard node.has_property_int(internal_properties_model_order) else {
+      return false
+    }
+    guard seen.add_and_check(
+      node.get_property_int(internal_properties_model_order),
+    ) else {
+      return false
+    }
+  }
+  nodes.sort_by((left, right) => {
+    model_order_node_compare_int(
+      left.get_property_int(internal_properties_model_order),
+      right.get_property_int(internal_properties_model_order),
+    )
+  })
+  true
+}
+
+///|
 fn sort_by_input_model_processor_process(
   graph : LGraph,
   progress_monitor : @core.IElkProgressMonitor?,
@@ -284,11 +328,19 @@ fn sort_by_input_model_processor_process(
       }
     }
 
-    let comparator = new_model_order_node_comparator_from_layer(
-      graph, previous_layer, ordering_strategy, long_edge_strategy, group_order_strategy,
-      false,
-    )
-    sort_by_input_model_processor_insertion_sort(layer.get_nodes(), comparator)
+    if !sort_by_input_model_processor_sort_by_model_order(
+        layer.get_nodes(),
+        ordering_strategy,
+      ) {
+      let comparator = new_model_order_node_comparator_from_layer(
+        graph, previous_layer, ordering_strategy, long_edge_strategy, group_order_strategy,
+        false,
+      )
+      sort_by_input_model_processor_insertion_sort(
+        layer.get_nodes(),
+        comparator,
+      )
+    }
 
     if monitor.is_logging_enabled() {
       monitor.log("Layer " + layer_index.to_string() + ": " + layer.to_string())
