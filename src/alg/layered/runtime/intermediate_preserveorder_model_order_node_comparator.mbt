@@ -1,40 +1,36 @@
 ///|
-fn model_order_node_contains(values : Array[Int], value : Int) -> Bool {
-  for candidate in values {
-    if candidate == value {
-      return true
-    }
-  }
-  false
+fn model_order_node_contains(
+  values : @hashset.HashSet[Int],
+  value : Int,
+) -> Bool {
+  values.contains(value)
 }
 
 ///|
-fn model_order_node_add_unique(values : Array[Int], value : Int) -> Unit {
-  if model_order_node_contains(values, value) {
-    return
-  }
-  values.push(value)
+fn model_order_node_add_unique(
+  values : @hashset.HashSet[Int],
+  value : Int,
+) -> Unit {
+  values.add(value)
 }
 
 ///|
 fn model_order_node_add_all_unique(
-  target : Array[Int],
-  source : Array[Int],
+  target : @hashset.HashSet[Int],
+  source : @hashset.HashSet[Int],
 ) -> Unit {
-  for value in source {
-    model_order_node_add_unique(target, value)
-  }
+  source.each(value => target.add(value))
 }
 
 ///|
 fn model_order_node_associations_get(
-  associations : Map[Int, Array[Int]],
+  associations : Map[Int, @hashset.HashSet[Int]],
   node_handle : Int,
-) -> Array[Int] {
+) -> @hashset.HashSet[Int] {
   match associations.get(node_handle) {
     Some(values) => values
     None => {
-      let values = []
+      let values = @hashset.HashSet([])
       associations[node_handle] = values
       values
     }
@@ -166,8 +162,8 @@ pub struct ModelOrderNodeComparator {
   graph : LGraph
   ordering_strategy : OrderingStrategy
   group_order_strategy : GroupOrderStrategy
-  mut bigger_than : Map[Int, Array[Int]]
-  mut smaller_than : Map[Int, Array[Int]]
+  mut bigger_than : Map[Int, @hashset.HashSet[Int]]
+  mut smaller_than : Map[Int, @hashset.HashSet[Int]]
   long_edge_node_order : LongEdgeOrderingStrategy
   before_ports : Bool
 }
@@ -648,7 +644,7 @@ pub fn ModelOrderNodeComparator::compare(
   let n2_handle = lnode_internal_handle(n2)
 
   if self.bigger_than.get(n1_handle) is None {
-    self.bigger_than[n1_handle] = []
+    self.bigger_than[n1_handle] = @hashset.HashSet([])
   } else {
     let n1_bigger = model_order_node_associations_get(
       self.bigger_than,
@@ -659,7 +655,7 @@ pub fn ModelOrderNodeComparator::compare(
     }
   }
   if self.bigger_than.get(n2_handle) is None {
-    self.bigger_than[n2_handle] = []
+    self.bigger_than[n2_handle] = @hashset.HashSet([])
   } else {
     let n2_bigger = model_order_node_associations_get(
       self.bigger_than,
@@ -670,7 +666,7 @@ pub fn ModelOrderNodeComparator::compare(
     }
   }
   if self.smaller_than.get(n1_handle) is None {
-    self.smaller_than[n1_handle] = []
+    self.smaller_than[n1_handle] = @hashset.HashSet([])
   } else {
     let n1_smaller = model_order_node_associations_get(
       self.smaller_than,
@@ -681,7 +677,7 @@ pub fn ModelOrderNodeComparator::compare(
     }
   }
   if self.smaller_than.get(n2_handle) is None {
-    self.smaller_than[n2_handle] = []
+    self.smaller_than[n2_handle] = @hashset.HashSet([])
   } else {
     let n2_bigger = model_order_node_associations_get(
       self.bigger_than,

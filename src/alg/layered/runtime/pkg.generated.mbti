@@ -9,6 +9,7 @@ import {
   "Milky2018/moon_elk/core",
   "Milky2018/moon_elk/graph",
   "moonbitlang/core/debug",
+  "moonbitlang/core/hashset",
   "moonbitlang/core/random",
 }
 
@@ -2428,8 +2429,8 @@ pub fn MedianHeuristic::set_first_layer_order(Self, Array[Array[LNode]], Bool) -
 
 pub struct ModelOrderBarycenterHeuristic {
   base : BarycenterHeuristic
-  mut bigger_than : Map[Int, Array[Int]]
-  mut smaller_than : Map[Int, Array[Int]]
+  mut bigger_than : Map[Int, @hashset.HashSet[Int]]
+  mut smaller_than : Map[Int, @hashset.HashSet[Int]]
 }
 pub fn ModelOrderBarycenterHeuristic::always_improves(Self) -> Bool
 pub fn ModelOrderBarycenterHeuristic::as_i_crossing_minimization_heuristic(Self) -> ICrossingMinimizationHeuristic
@@ -2446,8 +2447,8 @@ pub struct ModelOrderNodeComparator {
   graph : LGraph
   ordering_strategy : @options.OrderingStrategy
   group_order_strategy : @options.GroupOrderStrategy
-  mut bigger_than : Map[Int, Array[Int]]
-  mut smaller_than : Map[Int, Array[Int]]
+  mut bigger_than : Map[Int, @hashset.HashSet[Int]]
+  mut smaller_than : Map[Int, @hashset.HashSet[Int]]
   long_edge_node_order : @options.LongEdgeOrderingStrategy
   before_ports : Bool
 }
@@ -2461,8 +2462,8 @@ pub struct ModelOrderPortComparator {
   previous_layer : Array[LNode]
   graph : LGraph
   strategy : @options.OrderingStrategy
-  mut bigger_than : Map[Int, Array[Int]]
-  mut smaller_than : Map[Int, Array[Int]]
+  mut bigger_than : Map[Int, @hashset.HashSet[Int]]
+  mut smaller_than : Map[Int, @hashset.HashSet[Int]]
 }
 pub fn ModelOrderPortComparator::check_port_model_order(Self, LPort, LPort) -> Int
 pub fn ModelOrderPortComparator::clear_transitive_ordering(Self) -> Unit

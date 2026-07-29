@@ -1,47 +1,43 @@
 ///|
-fn model_order_barycenter_contains(values : Array[Int], value : Int) -> Bool {
-  for candidate in values {
-    if candidate == value {
-      return true
-    }
-  }
-  false
+fn model_order_barycenter_contains(
+  values : @hashset.HashSet[Int],
+  value : Int,
+) -> Bool {
+  values.contains(value)
 }
 
 ///|
-fn model_order_barycenter_add_unique(values : Array[Int], value : Int) -> Unit {
-  if model_order_barycenter_contains(values, value) {
-    return
-  }
-  values.push(value)
+fn model_order_barycenter_add_unique(
+  values : @hashset.HashSet[Int],
+  value : Int,
+) -> Unit {
+  values.add(value)
 }
 
 ///|
 fn model_order_barycenter_add_all_unique(
-  target : Array[Int],
-  source : Array[Int],
+  target : @hashset.HashSet[Int],
+  source : @hashset.HashSet[Int],
 ) -> Unit {
-  for value in source {
-    model_order_barycenter_add_unique(target, value)
-  }
+  source.each(value => target.add(value))
 }
 
 ///|
 fn model_order_barycenter_associations_for(
-  associations : Map[Int, Array[Int]],
+  associations : Map[Int, @hashset.HashSet[Int]],
   node_handle : Int,
-) -> Array[Int] {
+) -> @hashset.HashSet[Int] {
   match associations.get(node_handle) {
     Some(values) => values
     None => {
-      associations[node_handle] = []
+      associations[node_handle] = @hashset.HashSet([])
       match associations.get(node_handle) {
         Some(values) => values
         None => {
           @core.layout_runtime_report_unsupported_configuration(
             "association map entry initialization failed",
           )
-          []
+          @hashset.HashSet([])
         }
       }
     }
@@ -62,8 +58,8 @@ fn model_order_barycenter_compare_int(left : Int, right : Int) -> Int {
 ///|
 pub struct ModelOrderBarycenterHeuristic {
   base : BarycenterHeuristic
-  mut bigger_than : Map[Int, Array[Int]]
-  mut smaller_than : Map[Int, Array[Int]]
+  mut bigger_than : Map[Int, @hashset.HashSet[Int]]
+  mut smaller_than : Map[Int, @hashset.HashSet[Int]]
 }
 
 ///|

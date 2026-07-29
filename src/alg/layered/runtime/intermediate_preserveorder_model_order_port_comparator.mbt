@@ -78,42 +78,38 @@ fn model_order_port_node_handle(node : LNode) -> Int {
 }
 
 ///|
-fn model_order_port_contains(values : Array[Int], value : Int) -> Bool {
-  for candidate in values {
-    if candidate == value {
-      return true
-    }
-  }
-  false
+fn model_order_port_contains(
+  values : @hashset.HashSet[Int],
+  value : Int,
+) -> Bool {
+  values.contains(value)
 }
 
 ///|
-fn model_order_port_add_unique(values : Array[Int], value : Int) -> Unit {
-  if model_order_port_contains(values, value) {
-    return
-  }
-  values.push(value)
+fn model_order_port_add_unique(
+  values : @hashset.HashSet[Int],
+  value : Int,
+) -> Unit {
+  values.add(value)
 }
 
 ///|
 fn model_order_port_add_all_unique(
-  target : Array[Int],
-  source : Array[Int],
+  target : @hashset.HashSet[Int],
+  source : @hashset.HashSet[Int],
 ) -> Unit {
-  for value in source {
-    model_order_port_add_unique(target, value)
-  }
+  source.each(value => target.add(value))
 }
 
 ///|
 fn model_order_port_associations_for(
-  associations : Map[Int, Array[Int]],
+  associations : Map[Int, @hashset.HashSet[Int]],
   port_handle : Int,
-) -> Array[Int] {
+) -> @hashset.HashSet[Int] {
   match associations.get(port_handle) {
     Some(values) => values
     None => {
-      let values = []
+      let values = @hashset.HashSet([])
       associations[port_handle] = values
       values
     }
@@ -180,8 +176,8 @@ pub struct ModelOrderPortComparator {
   previous_layer : Array[LNode]
   graph : LGraph
   strategy : OrderingStrategy
-  mut bigger_than : Map[Int, Array[Int]]
-  mut smaller_than : Map[Int, Array[Int]]
+  mut bigger_than : Map[Int, @hashset.HashSet[Int]]
+  mut smaller_than : Map[Int, @hashset.HashSet[Int]]
 }
 
 ///|
